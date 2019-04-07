@@ -3,8 +3,9 @@ use strict;
 use warnings;
 use feature 'say';
 use Time::HiRes qw (sleep);
+use Time::Piece;
+use Time::Seconds;
 
-my $num = $ARGV[0] // 3;
 my $VERSION = "v0.0.1";
 
 my $num = $ARGV[0] // '';
@@ -32,6 +33,23 @@ elsif ($num =~ /\A(\d+)h(.*)/) {
         $num = $1 + $num;
     }
 }
+elsif ($num =~ /(.*)_(\d+):(\d+)\z/ || $num =~ /(\d+):(\d+)\z/) {
+    my $date; my $h; my $m;
+    my $today = localtime->strftime('%Y-%m-%d');
+
+    if ($num =~ /(.*)_(\d+):(\d+)\z/) {
+        $date = $1; $h = $2; $m = $3;
+        if ($date =~ /\A(\d+-\d+-\d+)\z/) {
+            $today = $1;
+        }
+    }
+    elsif ($num =~ /\A(\d+):(\d+)\z/) {
+        $h = $1; $m = $2;
+    }
+
+    my $target = localtime->strptime("$today $h:$m:00", '%Y-%m-%d %T')->epoch;
+    my $now = localtime->epoch;
+    $num = $target - $now;
 }
 elsif ($num =~ /\A(-h|--help)\z/) {
     say "timer.pl $VERSION";
@@ -57,7 +75,9 @@ elsif ($num =~ /\A\D+\z/) {
     exit;
 }
 
+$num = 3 if $num eq '';
 say "$num seconds.";
+
 
 while ($num > 0) {
     sleep(1);
