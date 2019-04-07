@@ -7,10 +7,31 @@ use Time::HiRes qw (sleep);
 my $num = $ARGV[0] // 3;
 my $VERSION = "v0.0.1";
 
-if ($num =~ /\A(\d+)m\z/) {
+my $num = $ARGV[0] // '';
+my $s; my $ms;
+
+if ($num =~ /\A(\d+)m(.*)/) {
+    say 2;
     $num = $1 * 60;
+    $s = $2;
+    if ($s =~ /\A(\d+)s\z/) {
+        $num = $1 + $num;
+    }
 }
-elsif ($num =~ /\A(\d+)m(\d+)s\z/) {
+elsif ($num =~ /\A(\d+)h(.*)/) {
+    $num = $1 * 60 * 60;
+    $ms = $2;
+    if ($ms =~ /\A(\d+)m(.*)/) {
+        $num = ($1 * 60) + $num;
+        $s = $2;
+        if ($s =~ /\A(\d+)s\z/) {
+            $num = $1 + $num;
+        }
+    }
+    elsif ($ms =~ /\A(\d+)s\z/) {
+        $num = $1 + $num;
+    }
+}
 }
 elsif ($num =~ /\A(-h|--help)\z/) {
     say "timer.pl $VERSION";
