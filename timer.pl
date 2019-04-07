@@ -64,7 +64,7 @@ elsif ($times =~ /\A(\D+)\z/) {
     exit;
 }
 else {
-    $times = 60;
+    $times = 10;
 }
 
 if ($url) {
