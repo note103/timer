@@ -45,6 +45,7 @@ while ($num > 0) {
 }
 
 say 'Timeout!';
+exit if $num < 0;
 
 my @sound = <DATA>;
 @sound = map {chomp; $_} @sound;
