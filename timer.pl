@@ -12,7 +12,6 @@ my $num = $ARGV[0] // '';
 my $s; my $ms;
 
 if ($num =~ /\A(\d+)m(.*)/) {
-    say 2;
     $num = $1 * 60;
     $s = $2;
     if ($s =~ /\A(\d+)s\z/) {
