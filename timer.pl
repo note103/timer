@@ -73,7 +73,22 @@ while ($num > 0) {
 say 'Timeout!';
 exit if $num < 0;
 
-my @sound = <DATA>;
+my @sound = qw(
+    Ping.aiff
+    Basso.aiff
+    Blow.aiff
+    Bottle.aiff
+    Frog.aiff
+    Funk.aiff
+    Glass.aiff
+    Hero.aiff
+    Morse.aiff
+    Pop.aiff
+    Purr.aiff
+    Sosumi.aiff
+    Submarine.aiff
+    Tink.aiff
+);
 @sound = map {chomp; $_} @sound;
 my $selected_sound = $sound[int(rand(scalar @sound))];
 
@@ -105,20 +120,6 @@ else {
 }
 
 __DATA__
-Ping.aiff
-Basso.aiff
-Blow.aiff
-Bottle.aiff
-Frog.aiff
-Funk.aiff
-Glass.aiff
-Hero.aiff
-Morse.aiff
-Pop.aiff
-Purr.aiff
-Sosumi.aiff
-Submarine.aiff
-Tink.aiff
 =head1 SYNOPSIS
 
   $ perl timer.pl <time> [<alarm>]
