@@ -5,6 +5,8 @@ use feature 'say';
 use Time::HiRes qw (sleep);
 use Time::Piece;
 use Time::Seconds;
+use Pod::Usage;
+
 
 my $VERSION = "v0.0.1";
 
@@ -52,23 +54,7 @@ elsif ($num =~ /(.*)_(\d+):(\d+)\z/ || $num =~ /(\d+):(\d+)\z/) {
 }
 elsif ($num =~ /\A(-h|--help)\z/) {
     say "timer.pl $VERSION";
-    say '';
-my $help = <<"help";
-Usage:
-    \$ perl timer.pl <time> [<alarm>]
-
-    <time>: *h*m*s or hh:mm or yyyy-mm-dd_hh:mm or URL
-    <alarm>: *(times) # default is 10 times.
-
-Synopsis: 
-    \$ perl timer.pl 1h2m3s\t#=> Rings 10 times after 3723 seconds.
-    \$ perl timer.pl 2m3s 5\t#=> Rings 5 times after 123 seconds.
-    \$ perl timer.pl 3s http://example.com/\t#=> Open example.com after 3 seconds.
-    \$ perl timer.pl 15:55\t#=> If that time is 15:54, Rings 10 times after 60 seconds.
-    \$ perl timer.pl 2019-04-07_15:55\t#=> If that time is 2019-04-06 15:54, Rings 10 times after 1 day and 60 seconds.
-help
-    say $help;
-    exit;
+    pod2usage;
 }
 elsif ($num =~ /\A\D+\z/) {
     exit;
@@ -87,7 +73,22 @@ while ($num > 0) {
 say 'Timeout!';
 exit if $num < 0;
 
-my @sound = <DATA>;
+my @sound = qw(
+    Ping.aiff
+    Basso.aiff
+    Blow.aiff
+    Bottle.aiff
+    Frog.aiff
+    Funk.aiff
+    Glass.aiff
+    Hero.aiff
+    Morse.aiff
+    Pop.aiff
+    Purr.aiff
+    Sosumi.aiff
+    Submarine.aiff
+    Tink.aiff
+);
 @sound = map {chomp; $_} @sound;
 my $selected_sound = $sound[int(rand(scalar @sound))];
 
@@ -119,17 +120,15 @@ else {
 }
 
 __DATA__
-Ping.aiff
-Basso.aiff
-Blow.aiff
-Bottle.aiff
-Frog.aiff
-Funk.aiff
-Glass.aiff
-Hero.aiff
-Morse.aiff
-Pop.aiff
-Purr.aiff
-Sosumi.aiff
-Submarine.aiff
-Tink.aiff
+=head1 SYNOPSIS
+
+  $ perl timer.pl <time> [<alarm>]
+
+  <time>: *h*m*s or hh:mm or yyyy-mm-dd_hh:mm or URL
+  <alarm>: *(times) # default is 10 times.
+
+  $ perl timer.pl 1h2m3s		#=> Rings 10 times after 3723 seconds.
+  $ perl timer.pl 2m3s 5		#=> Rings 5 times after 123 seconds.
+  $ perl timer.pl 3 http://example.com/	#=> Open example.com after 3 seconds.
+  $ perl timer.pl 15:55			#=> If that time is 15:54, Rings 10 times after 60 seconds.
+  $ perl timer.pl 2019-04-07_15:55	#=> If that time is 2019-04-06 15:54, Rings 10 times after 1 day and 60 seconds.
