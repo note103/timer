@@ -5,25 +5,29 @@ use feature 'say';
 use Time::HiRes qw (sleep);
 use Time::Piece;
 use Time::Seconds;
+use Pod::Usage;
 
 my $VERSION = "v0.0.1";
 
 my $num = $ARGV[0] // '';
-my $s; my $ms;
+my $url = $ARGV[1] // '';
 
-if ($num =~ /\A(\d+)m(.*)/) {
+if ($num =~ /\A(\d+)s\z/) {
+    $num = $1;
+}
+elsif ($num =~ /\A(\d+)m(.*)/) {
     $num = $1 * 60;
-    $s = $2;
+    my $s = $2;
     if ($s =~ /\A(\d+)s\z/) {
         $num = $1 + $num;
     }
 }
 elsif ($num =~ /\A(\d+)h(.*)/) {
     $num = $1 * 60 * 60;
-    $ms = $2;
+    my $ms = $2;
     if ($ms =~ /\A(\d+)m(.*)/) {
         $num = ($1 * 60) + $num;
-        $s = $2;
+        my $s = $2;
         if ($s =~ /\A(\d+)s\z/) {
             $num = $1 + $num;
         }
@@ -50,28 +54,13 @@ elsif ($num =~ /(.*)_(\d+):(\d+)\z/ || $num =~ /(\d+):(\d+)\z/) {
     my $now = localtime->epoch;
     $num = $target - $now;
 }
-elsif ($num =~ /\A(-h|--help)\z/) {
-    say "timer.pl $VERSION";
-    say '';
-my $help = <<"help";
-Usage:
-    \$ perl timer.pl <time> [<alarm>]
-
-    <time>: *h*m*s or hh:mm or yyyy-mm-dd_hh:mm or URL
-    <alarm>: *(times) # default is 10 times.
-
-Synopsis: 
-    \$ perl timer.pl 1h2m3s\t#=> Rings 10 times after 3723 seconds.
-    \$ perl timer.pl 2m3s 5\t#=> Rings 5 times after 123 seconds.
-    \$ perl timer.pl 3s http://example.com/\t#=> Open example.com after 3 seconds.
-    \$ perl timer.pl 15:55\t#=> If that time is 15:54, Rings 10 times after 60 seconds.
-    \$ perl timer.pl 2019-04-07_15:55\t#=> If that time is 2019-04-06 15:54, Rings 10 times after 1 day and 60 seconds.
-help
-    say $help;
-    exit;
+elsif ($num =~ /\A(https?:\S+)\z/) {
+    $num = '';
+    $url = $1;
 }
-elsif ($num =~ /\A\D+\z/) {
-    exit;
+elsif ($num =~ /\A(-h|--help)\z/) {
+    say "timer.pl $VERSION\n";
+    pod2usage(verbose => 0);
 }
 
 $num = 3 if $num eq '';
@@ -85,40 +74,8 @@ while ($num > 0) {
 }
 
 say 'Timeout!';
-exit if $num < 0;
 
-my @sound = <DATA>;
-@sound = map {chomp; $_} @sound;
-my $selected_sound = $sound[int(rand(scalar @sound))];
-
-my $url;
-my $times = $ARGV[1] // '';
-
-if ( $times =~ /\A(\d+)\z/) {
-    $times = $1;
-}
-elsif ($times =~ /\A(http\S+)/) {
-    $url = $1;
-}
-elsif ($times =~ /\A(\D+)\z/) {
-    exit;
-}
-else {
-    $times = 10;
-}
-
-if ($url) {
-    print `open $url`;
-}
-else {
-    my $bell = 0;
-    while ($bell < $times) {
-        print `afplay /System/Library/Sounds/$selected_sound`;
-        $bell++;
-    }
-}
-
-__DATA__
+my @sound = qw /
 Ping.aiff
 Basso.aiff
 Blow.aiff
@@ -133,3 +90,41 @@ Purr.aiff
 Sosumi.aiff
 Submarine.aiff
 Tink.aiff
+/;
+
+@sound = map {chomp; $_} @sound;
+my $random_sound = $sound[int(rand(scalar @sound))];
+
+if ($url) {
+    print `open $url`;
+}
+else {
+    my $bell = 0;
+    while (1) {
+        print `afplay /System/Library/Sounds/$random_sound`;
+        $bell++;
+    }
+}
+
+print `open $url` if ($url =~ /\A(http\S+)/);
+
+exit if $num < 0;
+
+
+__END__
+
+=head1 SYNOPSIS
+
+$ perl timer.pl [time] [URL]
+
+Example:
+
+  $ perl timer.pl 1h2m3s
+  $ perl timer.pl 2m3s 5
+  $ perl timer.pl 3s http://example.com/
+  $ perl timer.pl 15:55
+  $ perl timer.pl 2019-04-07_15:55
+
+Options:
+
+  -h --help            Show help
