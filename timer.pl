@@ -116,7 +116,6 @@ $ perl timer.pl [time] [URL]
 Example:
 
   $ perl timer.pl 1h2m3s
-  $ perl timer.pl 2m3s 5
   $ perl timer.pl 3s http://example.com/
   $ perl timer.pl 15:55
   $ perl timer.pl 2019-04-07_15:55
