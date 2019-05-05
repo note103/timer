@@ -9,63 +9,68 @@ use Pod::Usage;
 
 my $VERSION = "v0.0.1";
 
-my $num = $ARGV[0] // '';
-my $url = $ARGV[1] // '';
+my @arg = @ARGV;
+my $num = '';
+my $url = '';
+my $msg = '';
 
-if ($num =~ /\A(\d+)s\z/) {
-    $num = $1;
-}
-elsif ($num =~ /\A(\d+)m(.*)/) {
-    $num = $1 * 60;
-    my $s = $2;
-    if ($s =~ /\A(\d+)s\z/) {
-        $num = $1 + $num;
+for my $arg (@arg) {
+    if ($arg =~ /\A(\d+)s?\z/) {
+        $num = $1;
     }
-}
-elsif ($num =~ /\A(\d+)h(.*)/) {
-    $num = $1 * 60 * 60;
-    my $ms = $2;
-    if ($ms =~ /\A(\d+)m(.*)/) {
-        $num = ($1 * 60) + $num;
+    elsif ($arg =~ /\A(\d+)m(.*)/) {
+        $num = $1 * 60;
         my $s = $2;
         if ($s =~ /\A(\d+)s\z/) {
             $num = $1 + $num;
         }
     }
-    elsif ($ms =~ /\A(\d+)s\z/) {
-        $num = $1 + $num;
-    }
-}
-elsif ($num =~ /(.*)_(\d+):(\d+)\z/ || $num =~ /(\d+):(\d+)\z/) {
-    my $date; my $h; my $m;
-    my $today = localtime->strftime('%Y-%m-%d');
-
-    if ($num =~ /(.*)_(\d+):(\d+)\z/) {
-        $date = $1; $h = $2; $m = $3;
-        if ($date =~ /\A(\d+-\d+-\d+)\z/) {
-            $today = $1;
+    elsif ($arg =~ /\A(\d+)h(.*)/) {
+        $num = $1 * 60 * 60;
+        my $ms = $2;
+        if ($ms =~ /\A(\d+)m(.*)/) {
+            $num = ($1 * 60) + $num;
+            my $s = $2;
+            if ($s =~ /\A(\d+)s\z/) {
+                $num = $1 + $num;
+            }
+        }
+        elsif ($ms =~ /\A(\d+)s\z/) {
+            $num = $1 + $num;
         }
     }
-    elsif ($num =~ /\A(\d+):(\d+)\z/) {
-        $h = $1; $m = $2;
+    elsif ($arg =~ /(.*)_(\d+):(\d+)\z/ || $arg =~ /(\d+):(\d+)\z/) {
+        my $date; my $h; my $m;
+        my $today = localtime->strftime('%Y-%m-%d');
+
+        if ($num =~ /(.*)_(\d+):(\d+)\z/) {
+            $date = $1; $h = $2; $m = $3;
+            if ($date =~ /\A(\d+-\d+-\d+)\z/) {
+                $today = $1;
+            }
+        }
+        elsif ($num =~ /\A(\d+):(\d+)\z/) {
+            $h = $1; $m = $2;
+        }
+
+        my $tnumet = localtime->strptime("$today $h:$m:00", '%Y-%m-%d %T')->epoch;
+        my $now = localtime->epoch;
+        $num = $tnumet - $now;
     }
-
-    my $target = localtime->strptime("$today $h:$m:00", '%Y-%m-%d %T')->epoch;
-    my $now = localtime->epoch;
-    $num = $target - $now;
-}
-elsif ($num =~ /\A(https?:\S+)\z/) {
-    $num = '';
-    $url = $1;
-}
-elsif ($num =~ /\A(-h|--help)\z/) {
-    say "timer.pl $VERSION\n";
-    pod2usage(verbose => 0);
+    elsif ($arg =~ /\A(https?:\S+)\z/) {
+        $url = $1;
+    }
+    elsif ($arg =~ /\A\D/) {
+        $msg = $arg;
+    }
+    elsif ($arg =~ /\A(-h|--help)\z/) {
+        say "timer.pl $VERSION\n";
+        pod2usage(verbose => 0);
+    }
 }
 
-$num = 3 if $num eq '';
+$num = 3 if $num eq $msg || $num eq '';
 say "$num seconds.";
-
 
 while ($num > 0) {
     sleep(1);
@@ -73,7 +78,12 @@ while ($num > 0) {
     say $num unless $num == 0;
 }
 
-say 'Timeout!';
+if ($msg) {
+    say $msg;
+}
+else {
+    say 'Timeout!';
+}
 
 my @sound = qw /
 Ping.aiff
@@ -101,8 +111,6 @@ if ($url) {
 else {
     print `afplay /System/Library/Sounds/$random_sound` while (1);
 }
-
-print `open $url` if ($url =~ /\A(http\S+)/);
 
 exit if $num < 0;
 
