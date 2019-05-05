@@ -99,11 +99,7 @@ if ($url) {
     print `open $url`;
 }
 else {
-    my $bell = 0;
-    while (1) {
-        print `afplay /System/Library/Sounds/$random_sound`;
-        $bell++;
-    }
+    print `afplay /System/Library/Sounds/$random_sound` while (1);
 }
 
 print `open $url` if ($url =~ /\A(http\S+)/);
