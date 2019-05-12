@@ -2,7 +2,6 @@
 use strict;
 use warnings;
 use feature 'say';
-use Time::HiRes qw (sleep);
 use Time::Piece;
 use Time::Seconds;
 use Pod::Usage;
@@ -109,7 +108,11 @@ if ($url) {
     print `open $url`;
 }
 else {
-    print `afplay /System/Library/Sounds/$random_sound` while (1);
+    my $end = 100;
+    while ($end > 0) {
+        print `afplay /System/Library/Sounds/$random_sound`;
+        $end--;
+    }
 }
 
 exit if $num < 0;
